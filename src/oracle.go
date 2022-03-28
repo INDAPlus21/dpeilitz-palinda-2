@@ -42,10 +42,48 @@ func main() {
 // The oracle also prints sporadic prophecies to stdout even without being asked.
 func Oracle() chan<- string {
 	questions := make(chan string)
+	answers := make(chan string)
 	// TODO: Answer questions.
 	// TODO: Make prophecies.
 	// TODO: Print answers.
+	go handle_questions(questions, answers)
+	go predictions(answers)
+	go print_prediction(answers)
+
 	return questions
+}
+
+func handle_questions(questions <-chan string, answers chan<- string) {
+	for q := range questions {
+		prophecy(q, answers)
+	}
+}
+
+func predictions(predictions chan string) {
+	words := []string{
+		"The forces of nature",
+		"Spirits",
+		"Swords",
+		"Winds of change",
+		"Winds of magic",
+		"The tides of war",
+		"The might of the heavens",
+		"Folk",
+		"",
+	}
+	time.Sleep(time.Duration(2+rand.Intn(3)) * time.Second)
+	prophecy(words[rand.Intn(len(words))], predictions)
+}
+
+func print_prediction(answers <-chan string) {
+	for answer := range answers {
+		fmt.Printf("%s: ", star)
+		for _, char := range answer {
+			fmt.Printf("%c", char)
+			time.Sleep(time.Duration(rand.Intn(200)) * time.Millisecond)
+		}
+		fmt.Printf("\n")
+	}
 }
 
 // This is the oracle's secret algorithm.
@@ -69,6 +107,9 @@ func prophecy(question string, answer chan<- string) {
 	nonsense := []string{
 		"The moon is dark.",
 		"The sun is bright.",
+		"The rain is wet",
+		"fire is hot",
+		"Viola can't rätta i tid",
 	}
 	answer <- longestWord + "... " + nonsense[rand.Intn(len(nonsense))]
 }
