@@ -18,6 +18,8 @@ const (
 	prompt = "> "
 )
 
+var previous_questions string
+
 func main() {
 	fmt.Printf("Welcome to %s, the oracle at %s.\n", star, venue)
 	fmt.Println("Your questions will be answered in due time.")
@@ -55,7 +57,7 @@ func Oracle() chan<- string {
 
 func handle_questions(questions <-chan string, answers chan<- string) {
 	for q := range questions {
-		prophecy(q, answers)
+		go prophecy(q, answers)
 	}
 }
 
@@ -94,6 +96,7 @@ func prophecy(question string, answer chan<- string) {
 	// only gave prophecies on the seventh day of each month.
 	time.Sleep(time.Duration(2+rand.Intn(3)) * time.Second)
 
+	previous_questions += question + "\n"
 	// Find the longest word.
 	longestWord := ""
 	words := strings.Fields(question) // Fields extracts the words into a slice.
@@ -102,16 +105,20 @@ func prophecy(question string, answer chan<- string) {
 			longestWord = w
 		}
 	}
+	if strings.Contains(question, "previous questions") {
+		answer <- "Your previous questions are?" + "..." + previous_questions
+	} else {
+		// Cook up some pointless nonsense.
+		nonsense := []string{
+			"The moon is dark.",
+			"The sun is bright.",
+			"The rain is wet",
+			"fire is hot",
+			"Viola can't rätta i tid",
+		}
+		answer <- longestWord + "... " + nonsense[rand.Intn(len(nonsense))]
 
-	// Cook up some pointless nonsense.
-	nonsense := []string{
-		"The moon is dark.",
-		"The sun is bright.",
-		"The rain is wet",
-		"fire is hot",
-		"Viola can't rätta i tid",
 	}
-	answer <- longestWord + "... " + nonsense[rand.Intn(len(nonsense))]
 }
 
 func init() { // Functions called "init" are executed before the main function.
